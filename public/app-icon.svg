@@ -1,0 +1,64 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08162F" />
+      <stop offset="1" stop-color="#1562FF" />
+    </linearGradient>
+    <radialGradient id="warm" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(206 48) rotate(135) scale(78)">
+      <stop stop-color="#FF6F51" stop-opacity="0.7" />
+      <stop offset="1" stop-color="#FF6F51" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="cell" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF" />
+      <stop offset="1" stop-color="#DDE8FF" />
+    </linearGradient>
+    <linearGradient id="hot" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7258" />
+      <stop offset="1" stop-color="#FF311F" />
+    </linearGradient>
+    <linearGradient id="scan" x1="52" y1="56" x2="190" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5DE1FF" />
+      <stop offset="1" stop-color="#A66BFF" />
+    </linearGradient>
+  </defs>
+
+  <rect x="16" y="16" width="224" height="224" rx="48" fill="url(#bg)" />
+  <rect x="18" y="18" width="220" height="220" rx="46" stroke="#FFFFFF" stroke-opacity="0.28" />
+  <circle cx="206" cy="48" r="74" fill="url(#warm)" />
+  <path d="M28 20H228C228 76 182 108 126 108H28V20Z" fill="white" fill-opacity="0.08" />
+
+  <g transform="translate(56 62)">
+    <rect x="0" y="0" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="40" y="0" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="80" y="0" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="120" y="0" width="28" height="28" rx="7" fill="url(#cell)" />
+
+    <rect x="0" y="40" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="40" y="40" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="80" y="40" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="120" y="40" width="28" height="28" rx="7" fill="url(#hot)" />
+
+    <rect x="0" y="80" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="40" y="80" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="80" y="80" width="28" height="28" rx="7" fill="url(#hot)" />
+    <rect x="120" y="80" width="28" height="28" rx="7" fill="url(#cell)" />
+
+    <rect x="0" y="120" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="40" y="120" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="80" y="120" width="28" height="28" rx="7" fill="url(#cell)" />
+    <rect x="120" y="120" width="28" height="28" rx="7" fill="url(#cell)" />
+  </g>
+
+  <circle
+    cx="129"
+    cy="135"
+    r="80"
+    stroke="url(#scan)"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-dasharray="300 210"
+    transform="rotate(-38 129 135)"
+  />
+  <path d="M129 135L186 92" stroke="#B4F2FF" stroke-width="8" stroke-linecap="round" />
+  <circle cx="186" cy="92" r="9" fill="#7BEFFF" />
+</svg>
