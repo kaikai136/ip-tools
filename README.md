@@ -1,81 +1,114 @@
 # IP 诊断工具
 
-基于 Tauri + React + TypeScript 的桌面应用程序，用于批量检测局域网内 IP 地址的在线状态。
+一个基于 Tauri + React + Rust 的局域网扫描桌面工具，用来快速查看网段内主机在线状态、对选中 IP 执行端口扫描，并提供简单的 Ping 测试面板。
 
 ## 功能特性
 
-- 🔍 批量 Ping 扫描 254 个 IP 地址
-- ⚡ 高性能并发扫描（50 个并发）
-- 🎨 可视化网格界面展示 IP 状态
-- 🔴 红色表示在线，灰色表示离线/超时
-- ⏱️ 实时显示扫描进度和统计信息
-- 💾 自动保存网络段配置
-- 🛑 支持随时停止扫描
+- 扫描整个 `1-254` 主机范围的在线状态
+- 对当前选中的单个 IP 执行 `1-65535` 端口扫描
+- 网格化展示主机分布，适合快速定位在线设备
+- 左侧内置 `Ping` 工具，可直接测试 IP 或域名连通性
+- 底部状态栏实时显示扫描目标、进度、在线主机数和耗时
+- 桌面端固定窗口尺寸，适合一屏查看主要信息
 
 ## 技术栈
 
-- **前端**: React 18 + TypeScript + Vite
-- **后端**: Rust + Tauri
-- **网络**: surge-ping (ICMP)
-- **并发**: Tokio 异步运行时
+- 前端：React 18 + TypeScript + Vite
+- 桌面容器：Tauri 1.x
+- 后端：Rust + Tokio
+- 网络探测：`surge-ping`
 
-## 安装依赖
+## 适用场景
 
-### 前端依赖
+- 局域网设备巡检
+- 常用主机在线探测
+- 单台主机端口开放情况排查
+- 内网环境下的快速 Ping / 扫描联动
+
+## 快速开始
+
+### 1. 安装依赖
+
 ```bash
 npm install
 ```
 
-### 后端依赖
-Rust 依赖会在构建时自动下载。
-
-## 开发运行
+### 2. 开发运行
 
 ```bash
 npm run tauri dev
 ```
 
-**注意**: 由于需要发送 ICMP 包，程序需要管理员权限：
-- **Windows**: 右键以管理员身份运行
-- **Linux**: 使用 `sudo` 运行
-- **macOS**: 使用 `sudo` 运行
-
-## 构建生产版本
+### 3. 生产构建
 
 ```bash
 npm run tauri build
 ```
 
-构建完成后，可执行文件位于 `src-tauri/target/release/bundle/` 目录。
+构建完成后的 Windows 可执行文件默认位于：
+
+```text
+src-tauri/target/release/IP诊断工具.exe
+```
 
 ## 使用说明
 
-1. 输入网络段（例如: `192.168.1`）
-2. 点击 "Ping" 按钮开始扫描
-3. 实时查看 IP 状态变化
-4. 点击 "Stop" 按钮可随时停止扫描
+### IP 探活
+
+1. 在顶部输入网段前三段，例如 `192.168.1`
+2. 点击 `扫描 IP`
+3. 在右侧网格中查看哪些主机在线
+4. 点击任意主机格子可查看详情
+
+### 端口扫描
+
+1. 先在主机分布网格中选中一个 IP
+2. 点击 `扫描端口`
+3. 工具会对该 IP 执行 `1-65535` 端口探测
+4. 结果会显示在右下角详情区域
+
+### Ping 工具
+
+1. 在左侧输入目标 IP 或域名
+2. 选择 Ping 次数
+3. 点击 `开始 Ping`
+4. 下方会逐条输出响应结果
 
 ## 项目结构
 
-```
+```text
 .
-├── src/                    # 前端源代码
-│   ├── components/         # React 组件
-│   ├── types/             # TypeScript 类型定义
-│   ├── utils/             # 工具函数
-│   ├── App.tsx            # 主应用组件
-│   └── main.tsx           # 入口文件
-├── src-tauri/             # Tauri 后端
-│   └── src/
-│       ├── commands.rs    # Tauri 命令
-│       ├── error.rs       # 错误类型
-│       ├── network_utils.rs  # 网络工具
-│       ├── ping_engine.rs    # Ping 引擎
-│       ├── task_manager.rs   # 任务管理
-│       └── main.rs        # 主函数
-└── README.md
+├─ public/                  # 网页图标等静态资源
+├─ scripts/                 # 辅助脚本
+├─ src/                     # React 前端
+│  ├─ components/           # 页面组件
+│  ├─ types/                # 类型定义
+│  ├─ utils/                # 工具函数
+│  ├─ App.tsx               # 主界面
+│  └─ App.css               # 全局样式
+├─ src-tauri/               # Tauri/Rust 后端
+│  ├─ icons/                # 应用图标
+│  ├─ src/
+│  │  ├─ commands.rs        # Tauri 命令
+│  │  ├─ network_utils.rs   # 网络参数解析
+│  │  ├─ ping_engine.rs     # Ping 逻辑
+│  │  ├─ scan_engine.rs     # 扫描逻辑
+│  │  └─ task_manager.rs    # 扫描任务管理
+│  └─ tauri.conf.json       # 桌面应用配置
+├─ package.json
+└─ README.md
 ```
 
-## 许可证
+## 环境要求
+
+- Node.js 18+
+- Rust stable
+- Windows 下建议使用管理员权限运行，以获得更稳定的 ICMP/Ping 行为
+
+## 发布版本
+
+如需直接下载可执行文件，请前往仓库的 GitHub Releases 页面。
+
+## License
 
 MIT
