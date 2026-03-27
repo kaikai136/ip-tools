@@ -30,14 +30,12 @@
       {
         "center": true,
         "fullscreen": false,
-        "resizable": false,
+        "resizable": true,
         "title": "IP诊断工具",
-        "width": 1220,
-        "height": 881,
-        "minWidth": 1220,
-        "minHeight": 881,
-        "maxWidth": 1220,
-        "maxHeight": 881
+        "width": 1320,
+        "height": 960,
+        "minWidth": 1180,
+        "minHeight": 860
       }
     ]
   }

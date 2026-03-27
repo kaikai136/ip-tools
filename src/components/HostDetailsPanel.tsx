@@ -8,9 +8,9 @@ interface HostDetailsPanelProps {
 
 const STATUS_LABELS: Record<HostInfo['status'], string> = {
   online: '在线',
-  offline: '离线',
+  offline: '无响应',
   scanning: '扫描中',
-  untested: '待开始',
+  untested: '待命',
 };
 
 const MODE_LABELS: Record<ScanMode, string> = {
@@ -24,7 +24,6 @@ export function HostDetailsPanel({ host, hostInfo, scanMode }: HostDetailsPanelP
       <aside className="panel host-details">
         <div className="section-head">
           <div>
-            <p className="section-kicker">Host Details</p>
             <h2>主机详情</h2>
           </div>
         </div>
@@ -48,7 +47,6 @@ export function HostDetailsPanel({ host, hostInfo, scanMode }: HostDetailsPanelP
     <aside className="panel host-details">
       <div className="section-head">
         <div>
-          <p className="section-kicker">Host Details</p>
           <h2>{hostInfo.ip}</h2>
         </div>
         <span className={`status-pill ${hostInfo.status}`}>{STATUS_LABELS[hostInfo.status]}</span>
@@ -65,7 +63,7 @@ export function HostDetailsPanel({ host, hostInfo, scanMode }: HostDetailsPanelP
         </div>
         <div className="detail-card">
           <span className="detail-label">响应时间</span>
-          <strong>{hostInfo.responseTime ? `${hostInfo.responseTime} ms` : '--'}</strong>
+          <strong>{typeof hostInfo.responseTime === 'number' ? `${hostInfo.responseTime} ms` : '--'}</strong>
         </div>
         <div className="detail-card">
           <span className="detail-label">已扫端口数</span>

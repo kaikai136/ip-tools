@@ -16,7 +16,7 @@ export function validateNetworkSegment(segment: string): string | undefined {
   });
 
   if (!isValid) {
-    return '每一段都必须是 0-255 的整数';
+    return '每一段都必须是 0-255 之间的整数';
   }
 
   return undefined;

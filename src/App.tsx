@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/tauri';
+import { useEffect, useState } from 'react';
 
+import { ErrorMessage } from './components/ErrorMessage';
+import { HostDetailsPanel } from './components/HostDetailsPanel';
+import { IpGrid } from './components/IpGrid';
+import { PasswordGeneratorModal } from './components/PasswordGeneratorModal';
 import { PingPanel } from './components/PingPanel';
 import { ScanStatusBar } from './components/ScanStatusBar';
-import { IpGrid } from './components/IpGrid';
-import { HostDetailsPanel } from './components/HostDetailsPanel';
-import { ErrorMessage } from './components/ErrorMessage';
 import { loadConfig, saveConfig } from './utils/storage';
 import { getHostNumber, validateNetworkSegment } from './utils/validation';
 import {
@@ -83,6 +84,7 @@ function App() {
   const [selectedHost, setSelectedHost] = useState<number | null>(DEFAULT_RANGE.start);
   const [localIp, setLocalIp] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const networkSegmentError = validateNetworkSegment(scanConfig.networkSegment);
   const previewRange = DEFAULT_RANGE;
@@ -103,6 +105,13 @@ function App() {
     scanMode === 'port'
       ? `${scanConfig.networkSegment}.${scanRange.start}`
       : `${scanRange.start}-${scanRange.end}`;
+  const toolbarHint = networkSegmentError
+    ? networkSegmentError
+    : scanMode === 'port'
+      ? selectedTargetIp
+        ? `将对 ${selectedTargetIp} 执行端口探测。`
+        : '请先选中一个 IP。'
+      : '将对 1-254 主机执行在线探测。';
 
   useEffect(() => {
     let isMounted = true;
@@ -200,7 +209,7 @@ function App() {
     setScanMode('ip');
 
     if (networkSegmentError) {
-      setError('请先修正网段。');
+      setError('请先修正网段输入。');
       return;
     }
 
@@ -222,7 +231,7 @@ function App() {
     setScanMode('port');
 
     if (networkSegmentError) {
-      setError('请先修正网段。');
+      setError('请先修正网段输入。');
       return;
     }
 
@@ -262,7 +271,7 @@ function App() {
 
   return (
     <div className="app">
-      <header className="hero">
+      <header className="hero panel">
         <div className="hero-copy">
           <div className="hero-title-row">
             <h1>IP 与端口扫描工具</h1>
@@ -279,14 +288,22 @@ function App() {
             <span>预览范围</span>
             <strong>1-254</strong>
           </div>
-          <div className={`hero-badge ${isScanning ? 'is-live' : ''}`}>
-            <span>当前状态</span>
-            <strong>{isScanning ? '扫描中' : '待命'}</strong>
-          </div>
+          <button
+            type="button"
+            className="hero-badge hero-action-btn"
+            onClick={() => setIsPasswordModalOpen(true)}
+          >
+            <span>工具扩展</span>
+            <strong>密码生成器</strong>
+          </button>
         </div>
       </header>
 
       <ErrorMessage error={error} onDismiss={() => setError(null)} />
+      <PasswordGeneratorModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
 
       <div className="dashboard-layout">
         <div className="sidebar-stack">
@@ -335,7 +352,7 @@ function App() {
                 </div>
               </div>
               <p className={`grid-toolbar-note ${networkSegmentError ? 'is-error' : ''}`}>
-                {networkSegmentError ?? '输入前三段地址，程序会自动补齐 1-254 的主机号。'}
+                {toolbarHint}
               </p>
             </div>
 

@@ -43,6 +43,17 @@ export interface AppConfig {
   portsInput: string;
 }
 
+export interface PasswordRecord {
+  id: string;
+  password: string;
+  length: number;
+  includeUppercase: boolean;
+  includeLowercase: boolean;
+  includeNumbers: boolean;
+  includeSymbols: boolean;
+  createdAt: number;
+}
+
 export const EVENTS = {
   HOST_SCAN_RESULT: 'host-scan-result',
   SCAN_COMPLETE: 'scan-complete',

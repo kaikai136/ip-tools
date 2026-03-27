@@ -9,7 +9,7 @@ export function ErrorMessage({ error, onDismiss }: ErrorMessageProps) {
   return (
     <div className="error-banner" role="alert">
       <span className="error-text">{error}</span>
-      <button onClick={onDismiss} className="error-close" aria-label="关闭错误提示">
+      <button type="button" onClick={onDismiss} className="error-close" aria-label="关闭错误提示">
         ×
       </button>
     </div>

@@ -20,7 +20,7 @@ function getStatusLabel(status: HostInfo['status']) {
     case 'scanning':
       return '扫描中';
     default:
-      return '待开始';
+      return '待命';
   }
 }
 
@@ -47,10 +47,8 @@ export function IpGrid({
     const title = [
       ip,
       `状态: ${getStatusLabel(status)}`,
-      hostInfo?.responseTime ? `延迟: ${hostInfo.responseTime} ms` : '延迟: -',
-      hostInfo?.openPorts.length
-        ? `开放端口: ${hostInfo.openPorts.join(', ')}`
-        : '开放端口: 无',
+      typeof hostInfo?.responseTime === 'number' ? `延迟: ${hostInfo.responseTime} ms` : '延迟: -',
+      hostInfo?.openPorts.length ? `开放端口: ${hostInfo.openPorts.join(', ')}` : '开放端口: 无',
     ].join('\n');
 
     cells.push(
