@@ -1,6 +1,7 @@
 use std::future::Future;
 use std::fs;
 use std::net::IpAddr;
+use std::process::Command;
 use std::sync::Arc;
 
 use tauri::{AppHandle, Manager};
@@ -191,6 +192,34 @@ pub async fn ping_host_with_timeout(
         .scan_engine
         .ping_host_with_timeout(ip, timeout_ms)
         .await)
+}
+
+#[tauri::command]
+pub async fn open_ping_in_terminal(host: String) -> Result<(), String> {
+    let ip = resolve_ping_target(&host)
+        .await
+        .map_err(|e| e.to_user_message())?;
+    let ping_target = ip.to_string();
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("cmd")
+            .args(["/C", "start", "", "cmd", "/K", "ping", ping_target.as_str()])
+            .spawn()
+            .map_err(|error| format!("打开 CMD Ping 窗口失败: {}", error))?;
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Command::new("ping")
+            .arg(&ping_target)
+            .spawn()
+            .map_err(|error| format!("打开 Ping 窗口失败: {}", error))?;
+
+        Ok(())
+    }
 }
 
 #[tauri::command]

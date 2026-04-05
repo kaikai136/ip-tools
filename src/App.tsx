@@ -230,6 +230,19 @@ function App() {
     setIsPortScannerModalOpen(true);
   };
 
+  const handleHostDoubleClick = async (host: number) => {
+    const targetIp = `${scanConfig.networkSegment}.${host}`;
+    setSelectedHost(host);
+
+    try {
+      await invoke('open_ping_in_terminal', {
+        host: targetIp,
+      });
+    } catch (invokeError) {
+      setError(String(invokeError));
+    }
+  };
+
   const handleStopScan = async () => {
     try {
       await invoke('stop_scan');
@@ -343,6 +356,10 @@ function App() {
                     停止扫描
                   </button>
                 </div>
+                <div className="grid-toolbar-selection" aria-live="polite">
+                  <span>选中 IP：</span>
+                  <strong>{selectedTargetIp ?? '未选择'}</strong>
+                </div>
               </div>
               <p className={`grid-toolbar-note ${networkSegmentError ? 'is-error' : ''}`}>
                 {toolbarHint}
@@ -355,6 +372,7 @@ function App() {
               previewRange={previewRange}
               selectedHost={selectedHost}
               onSelectHost={setSelectedHost}
+              onDoubleClickHost={handleHostDoubleClick}
             />
           </section>
         </div>

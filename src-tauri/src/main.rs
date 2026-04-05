@@ -45,6 +45,7 @@ fn main() {
             commands::get_local_ip,
             commands::ping_host,
             commands::ping_host_with_timeout,
+            commands::open_ping_in_terminal,
             commands::start_port_tool_scan,
             commands::quick_port_test,
             commands::write_text_file,

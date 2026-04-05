@@ -9,6 +9,7 @@ interface IpGridProps {
   };
   selectedHost: number | null;
   onSelectHost: (host: number) => void;
+  onDoubleClickHost: (host: number) => void;
 }
 
 function getStatusLabel(status: HostInfo['status']) {
@@ -30,6 +31,7 @@ export function IpGrid({
   previewRange,
   selectedHost,
   onSelectHost,
+  onDoubleClickHost,
 }: IpGridProps) {
   const cells = [];
 
@@ -59,6 +61,7 @@ export function IpGrid({
         title={title}
         aria-label={title}
         onClick={() => onSelectHost(host)}
+        onDoubleClick={() => onDoubleClickHost(host)}
       >
         <span className="ip-host">{host}</span>
       </button>,
