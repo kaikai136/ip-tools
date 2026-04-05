@@ -42,6 +42,33 @@ pub struct ScanStats {
     pub duration: u64,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PortToolScanResult {
+    pub host: String,
+    pub open_ports: Vec<u16>,
+    pub scanned_ports: usize,
+    pub duration: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PortToolProgress {
+    pub host: String,
+    pub scanned_ports: usize,
+    pub total_ports: usize,
+    pub open_ports: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PortQuickTestResult {
+    pub host: String,
+    pub port: u16,
+    pub is_open: bool,
+    pub duration: u64,
+}
+
 pub struct ScanEngine {
     ping_engine: Arc<PingEngine>,
     host_concurrency: usize,
@@ -93,6 +120,118 @@ impl ScanEngine {
 
     pub async fn ping_host(&self, ip: IpAddr) -> PingResult {
         self.ping_engine.ping_ip(ip).await
+    }
+
+    pub async fn ping_host_with_timeout(&self, ip: IpAddr, timeout_ms: u64) -> PingResult {
+        self.ping_engine
+            .ping_ip_with_timeout(ip, Duration::from_millis(timeout_ms.max(100)))
+            .await
+    }
+
+    pub async fn scan_custom_port_range<F>(
+        &self,
+        ip: IpAddr,
+        ports: Vec<u16>,
+        timeout_ms: u64,
+        concurrency: usize,
+        cancel_token: CancellationToken,
+        on_progress: F,
+    ) -> Result<PortToolScanResult, AppError>
+    where
+        F: Fn(PortToolProgress) + Send + Sync + 'static,
+    {
+        let started_at = Instant::now();
+        let host = ip.to_string();
+        let total_ports = ports.len();
+        let timeout = Duration::from_millis(timeout_ms.max(50));
+        let concurrency = concurrency.max(1);
+        let on_progress = Arc::new(on_progress);
+        let ports = Arc::new(ports);
+
+        let mut open_ports = Vec::new();
+        let mut pending_ports = ports.iter().copied();
+        let mut in_flight = FuturesUnordered::new();
+        let mut scanned_ports = 0;
+
+        for _ in 0..concurrency {
+            let Some(port) = pending_ports.next() else {
+                break;
+            };
+
+            in_flight.push(Self::scan_single_port_future(
+                ip,
+                port,
+                timeout,
+                cancel_token.clone(),
+            ));
+        }
+
+        while let Some(result) = in_flight.next().await {
+            let open_port = result?;
+            scanned_ports += 1;
+
+            if let Some(port) = open_port {
+                open_ports.push(port);
+            }
+
+            if scanned_ports == 1
+                || scanned_ports == total_ports
+                || scanned_ports % 32 == 0
+                || open_port.is_some()
+            {
+                on_progress(PortToolProgress {
+                    host: host.clone(),
+                    scanned_ports,
+                    total_ports,
+                    open_ports: open_ports.len(),
+                });
+            }
+
+            if cancel_token.is_cancelled() {
+                continue;
+            }
+
+            if let Some(port) = pending_ports.next() {
+                in_flight.push(Self::scan_single_port_future(
+                    ip,
+                    port,
+                    timeout,
+                    cancel_token.clone(),
+                ));
+            }
+        }
+
+        open_ports.sort_unstable();
+
+        Ok(PortToolScanResult {
+            host,
+            open_ports,
+            scanned_ports,
+            duration: started_at.elapsed().as_millis() as u64,
+        })
+    }
+
+    pub async fn test_single_port(
+        &self,
+        ip: IpAddr,
+        port: u16,
+        timeout_ms: u64,
+    ) -> Result<PortQuickTestResult, AppError> {
+        let started_at = Instant::now();
+        let socket = SocketAddr::new(ip, port);
+        let is_open = Self::scan_single_port(
+            socket,
+            Duration::from_millis(timeout_ms.max(50)),
+            CancellationToken::new(),
+        )
+        .await?;
+
+        Ok(PortQuickTestResult {
+            host: ip.to_string(),
+            port,
+            is_open,
+            duration: started_at.elapsed().as_millis() as u64,
+        })
     }
 
     async fn scan_range<F>(

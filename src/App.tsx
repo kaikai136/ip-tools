@@ -1,12 +1,13 @@
-import { listen } from '@tauri-apps/api/event';
+﻿import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useEffect, useState } from 'react';
 
 import { ErrorMessage } from './components/ErrorMessage';
-import { HostDetailsPanel } from './components/HostDetailsPanel';
 import { IpGrid } from './components/IpGrid';
+import { IPv4SubnettingModal } from './components/IPv4SubnettingModal';
 import { PasswordGeneratorModal } from './components/PasswordGeneratorModal';
-import { PingPanel } from './components/PingPanel';
+import { PingToolModal } from './components/PingToolModal';
+import { PortScannerModal } from './components/PortScannerModal';
 import { ScanStatusBar } from './components/ScanStatusBar';
 import { loadConfig, saveConfig } from './utils/storage';
 import { getHostNumber, validateNetworkSegment } from './utils/validation';
@@ -32,10 +33,6 @@ const DEFAULT_RANGE = {
   end: 254,
 };
 
-const SCAN_MODE_LABELS: Record<ScanMode, string> = {
-  ip: 'IP 探活',
-  port: '端口扫描',
-};
 
 function normalizeConfig(storedConfig: Partial<AppConfig> | null): AppConfig {
   return {
@@ -84,6 +81,9 @@ function App() {
   const [selectedHost, setSelectedHost] = useState<number | null>(DEFAULT_RANGE.start);
   const [localIp, setLocalIp] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isPortScannerModalOpen, setIsPortScannerModalOpen] = useState(false);
+  const [isPingModalOpen, setIsPingModalOpen] = useState(false);
+  const [isSubnetModalOpen, setIsSubnetModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const networkSegmentError = validateNetworkSegment(scanConfig.networkSegment);
@@ -100,7 +100,6 @@ function App() {
   const activeHostCount = currentHosts.filter((info) => info.status === 'online').length;
   const openPortCount = currentHosts.reduce((total, info) => total + info.openPorts.length, 0);
   const totalHosts = scanRange.end - scanRange.start + 1;
-  const selectedHostInfo = selectedHost === null ? undefined : ipStatuses.get(selectedHost);
   const statusTargetLabel =
     scanMode === 'port'
       ? `${scanConfig.networkSegment}.${scanRange.start}`
@@ -227,38 +226,8 @@ function App() {
     }
   };
 
-  const handleStartPortScan = async () => {
-    setScanMode('port');
-
-    if (networkSegmentError) {
-      setError('请先修正网段输入。');
-      return;
-    }
-
-    const targetHost = selectedHost;
-    if (targetHost === null) {
-      setError('请先在主机分布中选中一个 IP，再执行端口扫描。');
-      return;
-    }
-
-    const targetRange = {
-      start: targetHost,
-      end: targetHost,
-    };
-
-    prepareForScan('port', targetRange);
-
-    try {
-      await invoke('start_port_scan', {
-        networkSegment: scanConfig.networkSegment,
-        hostStart: targetRange.start,
-        hostEnd: targetRange.end,
-        portsInput: DEFAULT_CONFIG.portsInput,
-      });
-    } catch (invokeError) {
-      setError(String(invokeError));
-      resetAfterFailedStart();
-    }
+  const handleStartPortScan = () => {
+    setIsPortScannerModalOpen(true);
   };
 
   const handleStopScan = async () => {
@@ -275,41 +244,65 @@ function App() {
         <div className="hero-copy">
           <div className="hero-title-row">
             <h1>IP 与端口扫描工具</h1>
-            <p className="hero-summary">默认扫描 1-254 全段，端口扫描默认对选中 IP 执行 1-65535 探测。</p>
+            <div className="hero-meta">
+              <button
+                type="button"
+                className="hero-badge hero-action-btn"
+                onClick={() => setIsPortScannerModalOpen(true)}
+              >
+                <span>网络检测</span>
+                <strong>端口探测</strong>
+              </button>
+              <button
+                type="button"
+                className="hero-badge hero-action-btn"
+                onClick={() => setIsPingModalOpen(true)}
+              >
+                <span>网络检测</span>
+                <strong>Ping 工具</strong>
+              </button>
+              <button
+                type="button"
+                className="hero-badge hero-action-btn"
+                onClick={() => setIsSubnetModalOpen(true)}
+              >
+                <span>网络工具</span>
+                <strong>IPv4 子网划分</strong>
+              </button>
+              <button
+                type="button"
+                className="hero-badge hero-action-btn"
+                onClick={() => setIsPasswordModalOpen(true)}
+              >
+                <span>工具扩展</span>
+                <strong>密码生成器</strong>
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="hero-meta">
-          <div className="hero-badge">
-            <span>当前模式</span>
-            <strong>{SCAN_MODE_LABELS[scanMode]}</strong>
-          </div>
-          <div className="hero-badge">
-            <span>预览范围</span>
-            <strong>1-254</strong>
-          </div>
-          <button
-            type="button"
-            className="hero-badge hero-action-btn"
-            onClick={() => setIsPasswordModalOpen(true)}
-          >
-            <span>工具扩展</span>
-            <strong>密码生成器</strong>
-          </button>
         </div>
       </header>
 
       <ErrorMessage error={error} onDismiss={() => setError(null)} />
+      <PortScannerModal
+        isOpen={isPortScannerModalOpen}
+        onClose={() => setIsPortScannerModalOpen(false)}
+        selectedTargetIp={selectedTargetIp}
+      />
+      <PingToolModal
+        isOpen={isPingModalOpen}
+        onClose={() => setIsPingModalOpen(false)}
+        selectedTargetIp={selectedTargetIp}
+      />
+      <IPv4SubnettingModal
+        isOpen={isSubnetModalOpen}
+        onClose={() => setIsSubnetModalOpen(false)}
+      />
       <PasswordGeneratorModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
       />
 
       <div className="dashboard-layout">
-        <div className="sidebar-stack">
-          <PingPanel selectedTargetIp={selectedTargetIp} />
-        </div>
-
         <div className="results-layout">
           <section className="panel grid-panel">
             <div className="grid-toolbar">
@@ -364,8 +357,6 @@ function App() {
               onSelectHost={setSelectedHost}
             />
           </section>
-
-          <HostDetailsPanel host={selectedHost} hostInfo={selectedHostInfo} scanMode={scanMode} />
         </div>
       </div>
 

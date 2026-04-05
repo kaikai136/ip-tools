@@ -44,6 +44,10 @@ fn main() {
             commands::stop_scan,
             commands::get_local_ip,
             commands::ping_host,
+            commands::ping_host_with_timeout,
+            commands::start_port_tool_scan,
+            commands::quick_port_test,
+            commands::write_text_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

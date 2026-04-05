@@ -13,13 +13,25 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "dialog": {
+        "all": false,
+        "save": true
+      },
       "shell": {
         "all": false,
         "open": true
       }
     },
     "bundle": {
-      "active": false,
+      "active": true,
+      "icon": [
+        "icons/icon.ico"
+      ],
+      "windows": {
+        "wix": {
+          "language": "zh-CN"
+        }
+      },
       "targets": "all",
       "identifier": "com.ipdiagnostic.tool"
     },
@@ -32,10 +44,10 @@
         "fullscreen": false,
         "resizable": true,
         "title": "IP诊断工具",
-        "width": 1320,
-        "height": 960,
-        "minWidth": 1180,
-        "minHeight": 860
+        "width": 880,
+        "height": 720,
+        "minWidth": 780,
+        "minHeight": 680
       }
     ]
   }

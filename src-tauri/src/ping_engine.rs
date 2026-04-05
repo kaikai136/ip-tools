@@ -51,6 +51,10 @@ impl PingEngine {
     }
 
     pub async fn ping_ip(&self, ip: IpAddr) -> PingResult {
+        self.ping_ip_with_timeout(ip, self.timeout).await
+    }
+
+    pub async fn ping_ip_with_timeout(&self, ip: IpAddr, timeout: Duration) -> PingResult {
         let client = match self.get_client() {
             Ok(client) => client,
             Err(_) => return Self::timeout_result(ip),
@@ -58,7 +62,7 @@ impl PingEngine {
 
         let payload = [0; 8];
         let mut pinger = client.pinger(ip, PingIdentifier(rand::random())).await;
-        pinger.timeout(self.timeout);
+        pinger.timeout(timeout);
 
         match pinger.ping(PingSequence(0), &payload).await {
             Ok((_, duration)) => PingResult {

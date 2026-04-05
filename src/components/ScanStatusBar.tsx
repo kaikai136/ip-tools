@@ -44,10 +44,17 @@ export function ScanStatusBar({
   return (
     <section className="panel status-bar">
       <div className="status-track">
-        {items.map(([label, value]) => (
-          <div key={label} className="status-item">
-            <span className="status-item-label">{label}</span>
-            <strong className="status-item-value">{value}</strong>
+        {items.map(([label, value], index) => (
+          <div key={label} className="status-entry">
+            <div className="status-item">
+              <span className="status-item-label">{label}</span>
+              <strong className="status-item-value">{value}</strong>
+            </div>
+            {index < items.length - 1 ? (
+              <span className="status-separator" aria-hidden="true">
+                /
+              </span>
+            ) : null}
           </div>
         ))}
       </div>

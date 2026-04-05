@@ -36,6 +36,41 @@ export interface PingCommandResult {
   responseTime?: number;
 }
 
+export interface PingHistoryRecord {
+  id: string;
+  target: string;
+  successCount: number;
+  failureCount: number;
+  lossRate: number;
+  averageResponseTime: number | null;
+  minResponseTime: number | null;
+  maxResponseTime: number | null;
+  jitter: number | null;
+  totalCount: number;
+  createdAt: number;
+}
+
+export interface PortToolScanResult {
+  host: string;
+  openPorts: number[];
+  scannedPorts: number;
+  duration: number;
+}
+
+export interface PortToolProgressEvent {
+  host: string;
+  scannedPorts: number;
+  totalPorts: number;
+  openPorts: number;
+}
+
+export interface PortQuickTestResult {
+  host: string;
+  port: number;
+  isOpen: boolean;
+  duration: number;
+}
+
 export interface AppConfig {
   networkSegment: string;
   hostStart: string;
@@ -45,6 +80,7 @@ export interface AppConfig {
 
 export interface PasswordRecord {
   id: string;
+  projectName: string;
   password: string;
   length: number;
   includeUppercase: boolean;
@@ -58,4 +94,7 @@ export const EVENTS = {
   HOST_SCAN_RESULT: 'host-scan-result',
   SCAN_COMPLETE: 'scan-complete',
   SCAN_ERROR: 'scan-error',
+  PORT_TOOL_COMPLETE: 'port-tool-complete',
+  PORT_TOOL_ERROR: 'port-tool-error',
+  PORT_TOOL_PROGRESS: 'port-tool-progress',
 } as const;
