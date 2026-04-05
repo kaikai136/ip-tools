@@ -1468,7 +1468,7 @@ dependencies = [
 
 [[package]]
 name = "ip-diagnostic-tool"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "futures",
  "local-ip-address",
