@@ -1,9 +1,21 @@
-import { AppConfig, PasswordRecord, PingHistoryRecord } from '../types';
+import {
+  AppConfig,
+  AuthenticatorEntry,
+  PasswordRecord,
+  PingHistoryRecord,
+} from '../types';
+import {
+  normalizeBase32Secret,
+  normalizeTotpAlgorithm,
+  normalizeTotpDigits,
+  normalizeTotpPeriod,
+} from './totp';
 
 const CONFIG_KEY = 'ip-diagnostic-tool-config';
 const PASSWORD_HISTORY_KEY = 'ip-diagnostic-tool-password-history';
 const PING_HISTORY_KEY = 'ip-diagnostic-tool-ping-history';
 const EXPORT_PATH_KEY = 'ip-diagnostic-tool-last-export-path';
+const AUTHENTICATOR_ENTRIES_KEY = 'ip-diagnostic-tool-authenticator-entries';
 
 export function saveConfig(config: AppConfig): void {
   try {
@@ -98,6 +110,44 @@ export function loadPingHistory(): PingHistoryRecord[] {
     }
   } catch (error) {
     console.error('Failed to load ping history:', error);
+  }
+
+  return [];
+}
+
+export function saveAuthenticatorEntries(entries: AuthenticatorEntry[]): void {
+  try {
+    localStorage.setItem(AUTHENTICATOR_ENTRIES_KEY, JSON.stringify(entries));
+  } catch (error) {
+    console.error('Failed to save authenticator entries:', error);
+  }
+}
+
+export function loadAuthenticatorEntries(): AuthenticatorEntry[] {
+  try {
+    const stored = localStorage.getItem(AUTHENTICATOR_ENTRIES_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Array<Partial<AuthenticatorEntry>>;
+
+      return parsed
+        .filter((entry) => typeof entry.secret === 'string' && entry.secret.trim())
+        .map((entry) => ({
+          id: entry.id ?? crypto.randomUUID(),
+          issuer: typeof entry.issuer === 'string' ? entry.issuer : '',
+          accountName: typeof entry.accountName === 'string' ? entry.accountName : '',
+          secret: normalizeBase32Secret(entry.secret ?? ''),
+          digits: normalizeTotpDigits(
+            typeof entry.digits === 'number' ? entry.digits : 6,
+          ),
+          period: normalizeTotpPeriod(
+            typeof entry.period === 'number' ? entry.period : 30,
+          ),
+          algorithm: normalizeTotpAlgorithm(entry.algorithm),
+          createdAt: typeof entry.createdAt === 'number' ? entry.createdAt : Date.now(),
+        }));
+    }
+  } catch (error) {
+    console.error('Failed to load authenticator entries:', error);
   }
 
   return [];

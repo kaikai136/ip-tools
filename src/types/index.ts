@@ -90,6 +90,19 @@ export interface PasswordRecord {
   createdAt: number;
 }
 
+export type TotpAlgorithm = 'SHA-1' | 'SHA-256' | 'SHA-512';
+
+export interface AuthenticatorEntry {
+  id: string;
+  issuer: string;
+  accountName: string;
+  secret: string;
+  digits: number;
+  period: number;
+  algorithm: TotpAlgorithm;
+  createdAt: number;
+}
+
 export const EVENTS = {
   HOST_SCAN_RESULT: 'host-scan-result',
   SCAN_COMPLETE: 'scan-complete',

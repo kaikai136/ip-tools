@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { useEffect, useState } from 'react';
 
 import { ErrorMessage } from './components/ErrorMessage';
+import { AuthenticatorModal } from './components/AuthenticatorModal';
 import { IpGrid } from './components/IpGrid';
 import { IPv4SubnettingModal } from './components/IPv4SubnettingModal';
 import { PasswordGeneratorModal } from './components/PasswordGeneratorModal';
@@ -85,6 +86,7 @@ function App() {
   const [isPingModalOpen, setIsPingModalOpen] = useState(false);
   const [isSubnetModalOpen, setIsSubnetModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isAuthenticatorModalOpen, setIsAuthenticatorModalOpen] = useState(false);
 
   const networkSegmentError = validateNetworkSegment(scanConfig.networkSegment);
   const previewRange = DEFAULT_RANGE;
@@ -261,6 +263,14 @@ function App() {
               <button
                 type="button"
                 className="hero-badge hero-action-btn"
+                onClick={() => setIsAuthenticatorModalOpen(true)}
+              >
+                <span>工具扩展</span>
+                <strong>双因子认证</strong>
+              </button>
+              <button
+                type="button"
+                className="hero-badge hero-action-btn"
                 onClick={() => setIsPortScannerModalOpen(true)}
               >
                 <span>网络检测</span>
@@ -309,6 +319,10 @@ function App() {
       <IPv4SubnettingModal
         isOpen={isSubnetModalOpen}
         onClose={() => setIsSubnetModalOpen(false)}
+      />
+      <AuthenticatorModal
+        isOpen={isAuthenticatorModalOpen}
+        onClose={() => setIsAuthenticatorModalOpen(false)}
       />
       <PasswordGeneratorModal
         isOpen={isPasswordModalOpen}

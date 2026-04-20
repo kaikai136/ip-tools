@@ -49,6 +49,8 @@ fn main() {
             commands::start_port_tool_scan,
             commands::quick_port_test,
             commands::write_text_file,
+            commands::start_screen_clip,
+            commands::read_clipboard_image_data_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

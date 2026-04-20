@@ -1,9 +1,14 @@
 use std::future::Future;
 use std::fs;
+use std::io::Cursor;
 use std::net::IpAddr;
 use std::process::Command;
 use std::sync::Arc;
 
+use arboard::{Clipboard, Error as ClipboardError};
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use base64::Engine;
+use image::{DynamicImage, ImageBuffer, ImageFormat, Rgba};
 use tauri::{AppHandle, Manager};
 use tokio::net::lookup_host;
 
@@ -286,4 +291,51 @@ pub fn write_text_file(
 ) -> Result<String, String> {
     fs::write(&file_path, content).map_err(|error| format!("保存失败: {}", error))?;
     Ok(file_path)
+}
+
+#[tauri::command]
+pub async fn start_screen_clip() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("explorer")
+            .arg("ms-screenclip:")
+            .spawn()
+            .map_err(|error| format!("打开系统截图失败: {}", error))?;
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("当前系统暂不支持屏幕框选扫码。".to_string())
+    }
+}
+
+#[tauri::command]
+pub fn read_clipboard_image_data_url() -> Result<Option<String>, String> {
+    let mut clipboard =
+        Clipboard::new().map_err(|error| format!("读取剪贴板失败: {}", error))?;
+
+    let image = match clipboard.get_image() {
+        Ok(image) => image,
+        Err(ClipboardError::ContentNotAvailable) => return Ok(None),
+        Err(error) => return Err(format!("读取剪贴板图片失败: {}", error)),
+    };
+
+    let rgba_image = ImageBuffer::<Rgba<u8>, Vec<u8>>::from_raw(
+        image.width as u32,
+        image.height as u32,
+        image.bytes.into_owned(),
+    )
+    .ok_or_else(|| "剪贴板图片数据无效。".to_string())?;
+
+    let dynamic_image = DynamicImage::ImageRgba8(rgba_image);
+    let mut buffer = Cursor::new(Vec::new());
+
+    dynamic_image
+        .write_to(&mut buffer, ImageFormat::Png)
+        .map_err(|error| format!("编码截图失败: {}", error))?;
+
+    let encoded = BASE64_STANDARD.encode(buffer.into_inner());
+    Ok(Some(format!("data:image/png;base64,{}", encoded)))
 }
