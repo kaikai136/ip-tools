@@ -249,6 +249,19 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
   const [isSavingEntries, setIsSavingEntries] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const noticeText = error ?? message;
+  const noticeTone = error
+    ? 'error'
+    : message?.startsWith('请在屏幕上框选') || message?.startsWith('正在编辑')
+      ? 'info'
+      : 'success';
+  const noticeTitle =
+    noticeTone === 'error' ? '操作失败' : noticeTone === 'info' ? '提示' : '操作成功';
+
+  const handleCloseNotice = () => {
+    setMessage(null);
+    setError(null);
+  };
 
   useEffect(() => {
     saveAuthenticatorEntries(entries);
@@ -292,6 +305,8 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
     }
 
     setIsScreenClipScanning(false);
+    setMessage(null);
+    setError(null);
     setShareEntry(null);
     setShareQrDataUrl(null);
     setShareQrError(null);
@@ -402,6 +417,21 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
       cancelled = true;
     };
   }, [entries, isOpen, tick]);
+
+  useEffect(() => {
+    if (!isOpen || !noticeText) {
+      return undefined;
+    }
+
+    const timeoutMs = noticeTone === 'error' ? 5200 : noticeTone === 'info' ? 4200 : 3200;
+    const timerId = window.setTimeout(() => {
+      handleCloseNotice();
+    }, timeoutMs);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [isOpen, noticeText, noticeTone]);
 
   const resetForm = (entry?: AuthenticatorEntry) => {
     setForm(createFormState(entry));
@@ -750,6 +780,27 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
       }}
     >
       <section className="auth-tool-modal panel" role="dialog" aria-modal="true" aria-label="双因子认证">
+        {noticeText ? (
+          <div
+            className={`auth-notice-popup is-${noticeTone}`}
+            role="status"
+            aria-live={noticeTone === 'error' ? 'assertive' : 'polite'}
+          >
+            <div className="auth-notice-copy">
+              <strong>{noticeTitle}</strong>
+              <p>{noticeText}</p>
+            </div>
+            <button
+              type="button"
+              className="auth-notice-close"
+              onClick={handleCloseNotice}
+              aria-label="关闭提示"
+            >
+              ×
+            </button>
+          </div>
+        ) : null}
+
         <div className="auth-tool-modal-head">
           <div>
             <h2>双因子认证</h2>
@@ -947,9 +998,6 @@ export function AuthenticatorModal({ isOpen, onClose }: AuthenticatorModalProps)
                 {editingId ? '更新条目' : '添加条目'}
               </button>
             </div>
-
-            {message ? <p className="auth-feedback">{message}</p> : null}
-            {error ? <p className="auth-error">{error}</p> : null}
           </aside>
 
           <section className="auth-list-card">

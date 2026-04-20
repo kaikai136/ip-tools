@@ -7,8 +7,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "IP诊断工具",
-    "version": "0.1.4"
+    "productName": "运维工具",
+    "version": "0.1.5"
   },
   "tauri": {
     "allowlist": {
@@ -28,6 +28,9 @@
         "icons/icon.ico"
       ],
       "windows": {
+        "nsis": {
+          "template": "./windows/installer.nsi"
+        },
         "wix": {
           "language": "zh-CN"
         }
@@ -43,7 +46,7 @@
         "center": true,
         "fullscreen": false,
         "resizable": true,
-        "title": "IP诊断工具",
+        "title": "运维工具",
         "width": 880,
         "height": 720,
         "minWidth": 780,

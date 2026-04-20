@@ -883,8 +883,6 @@ select {
 }
 
 .auth-tool-modal-head p,
-.auth-feedback,
-.auth-error,
 .auth-storage-note,
 .auth-empty-state p {
   margin: 4px 0 0;
@@ -1050,12 +1048,88 @@ select {
   grid-template-columns: 1fr;
 }
 
-.auth-feedback {
-  color: #2a6a1f;
+.auth-notice-popup {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 45;
+  width: min(480px, calc(100% - 80px));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #d6e2f2;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 34px rgba(20, 36, 64, 0.16);
+  transform: translateX(-50%);
+  backdrop-filter: blur(8px);
+  animation: auth-notice-in 0.2s ease;
 }
 
-.auth-error {
+.auth-notice-popup.is-success {
+  border-color: #cae9d1;
+  background: rgba(246, 255, 248, 0.97);
+}
+
+.auth-notice-popup.is-error {
+  border-color: #f1c0bc;
+  background: rgba(255, 247, 246, 0.97);
+}
+
+.auth-notice-popup.is-info {
+  border-color: #cadcf8;
+  background: rgba(246, 250, 255, 0.97);
+}
+
+.auth-notice-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-notice-copy strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.auth-notice-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.auth-notice-popup.is-success .auth-notice-copy strong {
+  color: #27663a;
+}
+
+.auth-notice-popup.is-error .auth-notice-copy strong {
   color: #c44b3a;
+}
+
+.auth-notice-popup.is-info .auth-notice-copy strong {
+  color: #2c5eaa;
+}
+
+.auth-notice-close {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(14, 87, 240, 0.08);
+  color: #425876;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-notice-close:hover {
+  background: rgba(14, 87, 240, 0.14);
 }
 
 .auth-list-tools {
@@ -1483,6 +1557,18 @@ select {
   50%,
   100% {
     opacity: 0.36;
+  }
+}
+
+@keyframes auth-notice-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
